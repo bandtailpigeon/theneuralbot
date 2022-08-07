@@ -1,0 +1,98 @@
+import tweepy
+import gspread
+import pandas as pd
+from oauth2client.service_account import ServiceAccountCredentials
+import requests
+import re
+import os
+import math
+from collections import defaultdict
+scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_name('/PATH/TO/GOOGLE_JSON_API_FILE', scope)
+auth = tweepy.OAuthHandler("ACCESS_TOKEN", "ACCESS_SECRET")
+auth.set_access_token("BEARER_TOKEN", "BEARER_SECRET")
+api = tweepy.API(auth)
+client = gspread.authorize(creds)
+sheet = client.open('SPREADSHEET_NAME')
+sheet_instance = sheet.get_worksheet(0)
+records_data = sheet_instance.get_all_cells()
+records_df = pd.DataFrame.from_dict(records_data)
+do = records_df.head()
+action = list(do)
+userID="YOUR_BOT_HANDLE"
+count = 5
+topwords = []
+i = 1
+searchstatuses = []
+u = 0
+rowcount = sheet_instance.row_count
+
+for q in range(int(rowcount)):
+    text = str(sheet_instance.cell(col=2, row=int(i)))
+    word = "<Cell R"+str(i)+"C2 '"
+    text = text.replace(word, "")
+    word = "'>"
+    text = text.replace(word, "")
+    word =  '<Cell R'+str(i)+'C2 "'
+    text = text.replace(word, "")
+    word = '">'
+    text = text.replace(word, "")
+    word = "\\n"
+    text = text.replace(word, " ")
+    word = "\\"
+    text = text.replace(word, "")
+    username = text
+    if username == "<Cell R"+str(i)+"C2 None>":
+        sheet_instance.update("A"+str(i), "")
+        i = i +1
+        continue
+    else:
+        for status in api.user_timeline(screen_name=username, count = 200):
+            corrected = status.text
+            for item in corrected.split():
+                searchstatuses.append(item)
+        z= 0
+        for item in searchstatuses:
+            word = ","
+            item = item.replace(word,"")
+            searchstatuses[z] = item
+            z = 1
+        char_list = ["@", "&"]
+        resolution = []
+        flag = 1
+        for ele in searchstatuses:
+            for idx in char_list:
+                if idx not in ele:
+                    flag = 1
+                else:
+                    flag = 0  
+                    break
+            if(flag == 1):
+                resolution.append(ele)
+        popular = ["the", "to", "a", "i", "and", "of", "in", "rt", "our", "on", "for", "this", "was", "as", "with", "is", "at", "an", "that", "has", "be", "have", "from", "-", "you", "i''m", "so", "are", "we", "will", "by", "his", "her", "who", "not", "it", "their", "all", "+", "—", "my", "your", "am", "how", "us", '–', "--", "I’m", "I’m"]
+        for populust in popular:
+            for item in resolution:
+                if item.lower() == populust:
+                    resolution.remove(item)
+                else:
+                    continue
+        for x in range(5):
+            temp = defaultdict(int)
+            for sub in resolution:
+                for wrd in sub.split():
+                    temp[wrd] += 1
+            res = max(temp, key=temp.get)
+            topwords.append(str(res))
+            top = str(res)
+            for status in resolution:
+                if status.lower() == top.lower():
+                    resolution.remove(status)
+                else:
+                    continue       
+        sheet_instance.update("A"+str(i), str(topwords))
+        searchstatuses.clear()
+        resolution.clear()
+        topwords.clear()
+        i = i+1
+        q = q+1
+
