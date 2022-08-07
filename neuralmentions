@@ -1,26 +1,14 @@
 import tweepy
-import gspread
-import pandas as pd
-from oauth2client.service_account import ServiceAccountCredentials
 import requests
 import re
 import os
 import math
 import random
 from collections import defaultdict
-scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('/PATH/TO/YOUR_GOOGLE_API_JSON_TOKEN_FILE', scope)
-auth = tweepy.OAuthHandler("YOUR_TWITTER_TOKEN", "YOUR_TWITTER_SECRET")
-auth.set_access_token("YOUR_BEARER_TOKEN", "YOUR_BEARER_SECRET")
+auth = tweepy.OAuthHandler("ACCESS_TOKEN", "ACCESS_SECRET")
+auth.set_access_token("BEARER_TOKEN", "BEARER_SECRET")
 api = tweepy.API(auth)
-client = gspread.authorize(creds)
-sheet = client.open('SPREADSHEET_NAME')
-sheet_instance = sheet.get_worksheet(0)
-records_data = sheet_instance.get_all_cells()
-records_df = pd.DataFrame.from_dict(records_data)
-do = records_df.head()
-action = list(do)
-userID="TheNeuralBot"
+userID="YOUR_TWITTER_BOT_HANDLE"
 count = 5
 topwords = []
 i = 1
