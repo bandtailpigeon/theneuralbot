@@ -1,0 +1,87 @@
+import tweepy
+import gspread
+import pandas as pd
+from oauth2client.service_account import ServiceAccountCredentials
+import requests
+import re
+import os
+import math
+import random
+from collections import defaultdict
+scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_name('/PATH/TO/YOUR_GOOGLE_API_JSON_TOKEN_FILE', scope)
+auth = tweepy.OAuthHandler("YOUR_TWITTER_TOKEN", "YOUR_TWITTER_SECRET")
+auth.set_access_token("YOUR_BEARER_TOKEN", "YOUR_BEARER_SECRET")
+api = tweepy.API(auth)
+client = gspread.authorize(creds)
+sheet = client.open('SPREADSHEET_NAME')
+sheet_instance = sheet.get_worksheet(0)
+records_data = sheet_instance.get_all_cells()
+records_df = pd.DataFrame.from_dict(records_data)
+do = records_df.head()
+action = list(do)
+userID="TheNeuralBot"
+count = 5
+topwords = []
+i = 1
+searchstatuses = []
+mentions = api.mentions_timeline(count = 60)
+greetings = ["Here you go! 🧠 ", "Let's go! 🧠 ", "You got it! 🧠 ", "Coming right up! 🧠 "]
+for tweet in mentions:
+    file1=open("/PATH/TO/neural_mention_ids.txt","r")
+    readfile = file1.read()
+    if str(tweet.id) in readfile:
+        continue
+    else:
+        for status in api.user_timeline(screen_name=tweet.user.screen_name, count = 200):
+            corrected = status.text
+            for item in corrected.split():
+                searchstatuses.append(item)
+        z= 0
+        for item in searchstatuses:
+            word = ","
+            item = item.replace(word,"")
+            searchstatuses[z] = item
+            z = 1
+        char_list = ["@", "&"]
+        resolution = []
+        flag = 1
+        for ele in searchstatuses:
+            for idx in char_list:
+                if idx not in ele:
+                    flag = 1
+                else:
+                    flag = 0  
+                    break
+            if(flag == 1):
+                resolution.append(ele)
+        popular = ["the", "to", "a", "i", "and", "of", "in", "rt", "our", "on", "for", "this", "was", "as", "with", "is", "at", "an", "that", "has", "be", "have", "from", "-", "you", "i''m", "so", "are", "we", "will", "by", "his", "her", "who", "not", "it", "their", "all", "+", "—", "my", "your", "am", "how", "us", '–', "--", "I’m", "I’m"]
+        for populust in popular:
+            for item in resolution:
+                if item.lower() == populust:
+                    resolution.remove(item)
+                else:
+                    continue
+        for x in range(5):
+            temp = defaultdict(int)
+            for sub in resolution:
+                for wrd in sub.split():
+                    temp[wrd] += 1
+            res = max(temp, key=temp.get)
+            topwords.append(str(res))
+            top = str(res)
+            for status in resolution:
+                if status.lower() == top.lower():
+                    resolution.remove(status)
+                else:
+                    continue       
+        i = i+1
+        searchstatuses.clear()
+        resolution.clear()
+        api.update_status(status = random.choice(greetings) +"\n"+"\n"+ 'Your Most Common Uncommon Words:' + "\n"+"\n"+"1️⃣"+ topwords[0] + "\n"+ "2️⃣" + topwords[1] + "\n" + "3️⃣"+ topwords[2] + "\n" + "4️⃣"+ topwords[3] + "\n" + "5️⃣" + topwords[4] , in_reply_to_status_id = tweet.id , auto_populate_reply_metadata=True)
+        textfile = open("/PATH/TO/neural_mention_ids.txt", "a")
+        textfile.write(str(tweet.id)+ "\n")
+        textfile.close()
+        topwords.clear()
+
+
