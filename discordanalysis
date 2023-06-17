@@ -1,0 +1,252 @@
+import discord
+import os
+import datetime
+
+client = discord.Client()
+
+@client.event
+async def on_ready():
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="~setup"))
+    
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    if message.content.startswith("~invite"):
+        file1 = open("/Path/To/Color.txt", "r")
+        readfile = file1.read()
+        if message.author.name in readfile:
+            file2 = open(""/Path/To/Color"+message.author.name+".txt", "r")
+            readfile = file2.read()
+            color = readfile
+            color = int(color, 16)
+            file1.close()
+            file2.close()
+        else:
+            color = 0xf0d9c9
+        embedVar = discord.Embed(title="Invitation link", description = "https://discord.com/api/oauth2/authorize?client_id=value", color = color)
+        await message.channel.send(embed=embedVar)
+
+    if message.content.startswith("~setup"):
+        file1 = open(""/Path/To/Color.txt", "r")
+        readfile = file1.read()
+        if message.author.name in readfile:
+            file2 = open(""/Path/To/Color"+message.author.name+".txt", "r")
+            readfile = file2.read()
+            color = readfile
+            color = int(color, 16)
+            file1.close()
+            file2.close()
+        else:
+            color = 0xf0d9c9
+        embedVar = discord.Embed(title="Setup for "+message.author.display_name, description="Welcome to Neural. Below are some commands to get started.", color=color)
+        embedVar.add_field(name="~setup", value="Review your commands.", inline=False)
+        embedVar.add_field(name="~learn.self", value="Learn about your custom Neural setup.", inline=False)
+        embedVar.add_field(name="~create.customcolor", value="Create a custom color profile for Neural, entering your desired hex after this command.", inline=False)
+        embedVar.add_field(name="~begin.here", value="Begin Neural analysis for server from which you command Neural.", inline=False)
+        embedVar.add_field(name="~begin.search", value="Begin Neural analysis for server entering server ID after command.", inline=False)
+        await message.channel.send(embed=embedVar)
+        
+    if message.content.startswith("~learn.self"):
+        file1 = open("/Path/To/Color.txt", "r")
+        readfile = file1.read()
+        if message.author.name in readfile:
+            file2 = open("/Path/To/Color.txt"+message.author.name+".txt", "r")
+            readfile = file2.read()
+            color = readfile
+            color = int(color, 16)
+            file1.close()
+            file2.close()
+        else:
+            color = 0xf0d9c9
+        role_names = []
+        role_colors = []
+        member = message.author
+        try: 
+            for role in member.roles:
+                role_names.append(role.name)
+                role_colors.append(role.color)
+            role_names.remove("@everyone")
+            embedVar = discord.Embed(title="Information about "+message.author.display_name, description="Found using the ~learn.self command.", color=color)
+            embedVar.add_field(name="Username: " + message.author.name, value = "About " + message.author.display_name, inline = False)
+            text = str(hex(color))
+            word = "0x"
+            text = text.replace(word, "#")
+            embedVar.add_field(name="Custom Color: " + text, value = "Designated using the ~create.customcolor command.", inline = False)
+            i = 1
+            for role in role_names:
+                embedVar.add_field(name="Role: "+"".join(role), value ="Color Hex: "+ str(role_colors[i]), inline = False)
+                i = i+1
+            await message.channel.send(embed=embedVar)
+        except AttributeError:
+            embedVar = discord.Embed(title="Information about "+message.author.display_name, description="Found using the ~learn.self command.", color=color)
+            embedVar.add_field(name="Username: " + message.author.name, value = "About " + message.author.display_name, inline = False)
+            text = str(hex(color))
+            word = "0x"
+            text = text.replace(word, "#")
+            embedVar.add_field(name="Custom Color: " + text, value = "Designated using the ~create.customcolor command.", inline = False)
+            await message.channel.send(embed=embedVar)
+
+    if message.content.startswith("~create.customcolor"):
+        textfile = open("/Path/To/Color.txt", "a")
+        textfile.close()
+        file1 = open("/Path/To/Color.txt", "r")
+        readfile = file1.read()
+        if message.author.name in readfile:
+            file2 = open("/Path/To/Color"+message.author.name+".txt", "r")
+            readfile = file2.read()
+            color = readfile
+            color = int(color, 16)
+            file1.close()
+            file2.close()
+        else:
+            color = 0xf0d9c9
+        embedVar = discord.Embed(title="Custom color setup for "+message.author.display_name, description="Message the hex code of your preferred color in the form of XXXXXX.", color=color)
+        text = str(hex(color))
+        word = "0x"
+        text=text.replace(word,"#")
+        embedVar.add_field(name="Previous Color: " + text, value = "Saved hex value ", inline = False)
+        await message.channel.send(embed=embedVar)
+        content = message.content
+        intro = "~create.customcolor "
+        content = content.replace(intro,"")
+        intro = "~create.customcolor"
+        content = content.replace(intro,"")
+        intro = "#"
+        content = content.replace(intro,"")
+        intro = "0x"
+        content = content.replace(intro,"")
+        if content == "":
+            embedVar = discord.Embed(title="Failed custom color setup for "+message.author.display_name, description="Empty color value: Message the hex code of your preferred color in the form of XXXXXX.", color=color)
+            await message.channel.send(embed=embedVar)
+        else:
+            if content == "default":
+                textfile = open("/Path/To/Color.txt", "a")
+                textfile.write(message.author.name + "\n")
+                textfile.close()
+                textfile = open("/Path/To/Color"+message.author.name+".txt", "w")
+                textfile.write("0xf0d9c9")
+                textfile.close()
+                color = "0xf0d9c9"
+                color = int(color,16)
+                embedVar = discord.Embed(title="Custom color setup for "+message.author.display_name, description="Message the hex code of your preferred color in the form of XXXXXX.", color=color)
+                embedVar.add_field(name="Resetted to Default Color: #f0d9c9", value = "Updated hex value ", inline = False)
+                await message.channel.send(embed=embedVar)
+            else:
+                textfile = open("/Path/To/Color.txt", "a")
+                textfile.write(message.author.name + "\n")
+                textfile.close()
+                textfile = open("/Path/To/Color"+message.author.name+".txt", "w")
+                textfile.write("0x"+content)
+                textfile.close()
+                color = "0x"+content
+                color = int(color,16)
+                embedVar = discord.Embed(title="Custom color setup for "+message.author.display_name, description="Message the hex code of your preferred color in the form of XXXXXX.", color=color)
+                embedVar.add_field(name="New Color: #" + content, value = "Updated hex value ", inline = False)
+                await message.channel.send(embed=embedVar)
+                
+    if message.content.startswith("~begin.here"):
+        file1 = open("/Path/To/Color.txt", "r")
+        readfile = file1.read()
+        if message.author.name in readfile:
+            file2 = open("/Path/To/Color"+message.author.name+".txt", "r")
+            readfile = file2.read()
+            color = readfile
+            color = int(color, 16)
+            file1.close()
+            file2.close()
+        else:
+            color = 0xf0d9c9
+        async with message.channel.typing():
+            some_author_name=message.author.display_name
+            some_author_id = message.author.id
+            today = message.created_at.date()
+            embedVar = discord.Embed(title="Beginning analysis for "+message.author.display_name, description="Analysing total messages sent by user in the past 24 hours", color=color)
+            await message.channel.send(embed=embedVar)
+            emoji = '\N{GEAR}'
+            await message.add_reaction(emoji)
+            embedVar = discord.Embed(title="Analysis for "+message.author.display_name, description="Total messages sent by user in the past 24 hours per channel", color=color)
+            og=message.channel
+            counts = []
+            channels = message.guild.text_channels
+            i = 0
+            for blob in channels:
+                blob = channels[i]
+                counter = 0
+                messages = await blob.history(limit=None).flatten()
+                for message in messages:
+                    if message.author.id == some_author_id:
+                        if message.created_at.date() == today:
+                            counter = counter+1
+                counts.append(counter)
+                embedVar.add_field(name = counter, value = "Messages sent in "+str(blob.name), inline = False)
+                counter = 0
+                i = i+1
+            await og.send(embed=embedVar)
+            total = sum(counts)
+            if total < 100:      
+                embedVar = discord.Embed(title="Low server usage for "+some_author_name, description="You have sent fewer than 100 combined messages", color=0x32a852)
+                await og.send(embed=embedVar)
+            if 100<total<500:
+                embedVar = discord.Embed(title="Medium server usage for "+some_author_name, description="You have sent between 100 and 500 combined messages", color=0xf2e33f)
+                await og.send(embed=embedVar)
+            if total>500:
+                embedVar = discord.Embed(title="High server usage for "+some_author_name, description="You have sent over 500 combined messages", color=0xde263b)
+
+    if message.content.startswith("~begin.search"):
+        async with message.channel.typing():
+            file1 = open("/Path/To/Color.txt", "r")
+            readfile = file1.read()
+            if message.author.name in readfile:
+                file2 = open("/Path/To/Color"+message.author.name+".txt", "r")
+                readfile = file2.read()
+                color = readfile
+                color = int(color, 16)
+                file1.close()
+                file2.close()
+            else:
+                color = 0xf0d9c9
+            text = message.content
+            word = "~begin.search "
+            text = text.replace(word,"")
+            some_author_name=message.author.display_name
+            some_author_id = message.author.id
+            today = message.created_at.date()
+            try: 
+                guild=client.get_guild(int(text))
+                embedVar = discord.Embed(title="Beginning analysis for "+message.author.display_name, description="Analysing total messages sent by user in the past 24 hours", color=color)
+                await message.channel.send(embed=embedVar)
+                emoji = '\N{GEAR}'
+                await message.add_reaction(emoji)
+                embedVar = discord.Embed(title="Analysis for "+message.author.display_name, description="Total messages sent by user in the past 24 hours per channel", color=color)
+                og=message.channel
+                counts = []
+                channels = guild.text_channels
+                i = 0
+                for blob in channels:
+                    blob = channels[i]
+                    counter = 0
+                    messages = await blob.history(limit=None).flatten()
+                    for message in messages:
+                        if message.author.id == some_author_id:
+                            if message.created_at.date() == today:
+                                counter = counter+1
+                    counts.append(counter)
+                    embedVar.add_field(name = counter, value = "Messages sent in "+str(blob.name), inline = False)
+                    counter = 0
+                    i = i+1
+                await og.send(embed=embedVar)
+                total = sum(counts)
+                if total < 100:      
+                    embedVar = discord.Embed(title="Low server usage for "+some_author_name, description="You have sent fewer than 100 combined messages", color=0x32a852)
+                    await og.send(embed=embedVar)
+                if 100<total<500:
+                    embedVar = discord.Embed(title="Medium server usage for "+some_author_name, description="You have sent between 100 and 500 combined messages", color=0xf2e33f)
+                    await og.send(embed=embedVar)
+                if total>500:
+                    embedVar = discord.Embed(title="High server usage for "+some_author_name, description="You have sent over 500 combined messages", color=0xde263b)
+            except AttributeError:
+                embedVar = discord.Embed(title="Error", description="Either server ID is entered incorrectly, or Neural does not have permissions in that server.", color=0xde263b)
+                await message.channel.send(embed=embedVar)
+client.run("token")
+
